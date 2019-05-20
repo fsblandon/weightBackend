@@ -20,13 +20,12 @@ namespace weightBackend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ParticipanteContext>(opt =>
-                opt.UseInMemoryDatabase("Participante"));
+            services.AddDbContext<ParticipanteContext>(opt => opt.UseInMemoryDatabase("Participante"));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddCors(options =>
             {
                 options.AddPolicy("MyCorsPolicy", builder => builder
-                    .WithOrigins("http://localhost:5001")
+                    .WithOrigins("*")
                     .AllowAnyMethod()
                     .AllowCredentials()
                     .WithHeaders("Accept", "Content-Type", "Origin", "X-My-Header"));
@@ -48,6 +47,7 @@ namespace weightBackend
             app.UseCors("MyCorsPolicy");
 
             app.UseHttpsRedirection();
+            app.UseDeveloperExceptionPage();
             app.UseMvc();
         }
     }

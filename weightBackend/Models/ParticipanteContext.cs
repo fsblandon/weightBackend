@@ -5,6 +5,7 @@ namespace weightBackend.Models
 {
     public class ParticipanteContext: DbContext
     {
+
         public ParticipanteContext(DbContextOptions<ParticipanteContext> options): base(options)
         {
         }
