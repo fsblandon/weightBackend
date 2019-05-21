@@ -15,18 +15,11 @@ namespace weightBackend.Controllers
     public class ParticipanteController: ControllerBase
     {
         private readonly ParticipanteContext _dbContext;
-        Participante participante;
+        Participante participante = new Participante();
 
         public ParticipanteController(ParticipanteContext context)
         {
             _dbContext = context;
-
-            //if (_dbContext.Participantes.Count() == 0)
-            //{
-            //    _dbContext.Participantes.Add(new Participante { id = new Guid(), cedula = cedula, fecha_exec = fecha_exec }); ;
-            //    _dbContext.SaveChanges();
-            //}
-
         }
 
         [HttpPost]
@@ -45,29 +38,23 @@ namespace weightBackend.Controllers
                 calculoDias = Domain.CalcularViajesDia.CalcularDias(participante.file);
                 if(calculoDias != "")
                 {
-                    this.saveLog();
+                    saveLog();
+                    HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                    response.Content = new StringContent(calculoDias);
+                    response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
+                    response.Content.Headers.ContentDisposition.FileName = "lazy_loading_example_output.txt";
+                    response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                    return Ok(response);
                 }
-                // descargar archivo generado en memoria
-                HttpResponseMessage httpResponseMessage = new HttpResponseMessage(HttpStatusCode.Accepted)
+                else
                 {
-                    Content = new StringContent(calculoDias)
-                };
-                httpResponseMessage.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
-                {
-                    FileName = "lazy_loading_example_output.txt"
-                };
-                httpResponseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-
-                ResponseMessageResult responseMessageResult = responseMessageResult(httpResponseMessage);
-                return responseMessageResult;
-
+                    return NoContent();
+                }
             }
             catch(Exception e)
             {
-                return NotFound(e.Message);
+                return new JsonResult(e.Message);
             }
-
-            return Ok();
         }
 
         private void saveLog()
