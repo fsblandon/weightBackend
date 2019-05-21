@@ -1,6 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Cors;
@@ -16,8 +15,7 @@ namespace weightBackend.Controllers
     public class ParticipanteController: ControllerBase
     {
         private readonly ParticipanteContext _dbContext;
-        private int cedula;
-        private DateTime fecha_exec;
+        Participante participante;
 
         public ParticipanteController(ParticipanteContext context)
         {
@@ -33,36 +31,49 @@ namespace weightBackend.Controllers
 
         [HttpPost]
         [Route("generateFile")]
-        public ActionResult GenerateFile([FromBody] Participante data)
+        public ActionResult GenerateFile([FromQuery] int cedula)
         {
-            cedula = data.cedula;
-            fecha_exec = data.fecha_exec;
             try
             {
-                //byte[] fileBytes;
+                participante.cedula = cedula;
+                var fecha_exec = new DateTime();
+                participante.fecha_exec = fecha_exec;
 
-                //using (var stream = data.file.OpenReadStream())
-                //using (var ms = new MemoryStream())
-                //{
-                //    stream.CopyTo(ms);
-                //    fileBytes = ms.ToArray();
-                //}
+                participante.file = HttpContext.Request.Form.Files["file"];
 
-                var fileName = Path.GetFileName(data.file.FileName);
-                var fileMimeType = data.file.ContentType;
-                //var fileContent = fileBytes;
+                var calculoDias = "";
+                calculoDias = Domain.CalcularViajesDia.CalcularDias(participante.file);
+                if(calculoDias != "")
+                {
+                    this.saveLog();
+                }
+                // descargar archivo generado en memoria
+                HttpResponseMessage httpResponseMessage = new HttpResponseMessage(HttpStatusCode.Accepted)
+                {
+                    Content = new StringContent(calculoDias)
+                };
+                httpResponseMessage.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                {
+                    FileName = "lazy_loading_example_output.txt"
+                };
+                httpResponseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
-                _dbContext.Participantes.Add(new Participante { cedula = cedula, fecha_exec = fecha_exec });
-                _dbContext.SaveChanges();
-                //var file = Request.Form.Files[0];
+                ResponseMessageResult responseMessageResult = responseMessageResult(httpResponseMessage);
+                return responseMessageResult;
 
             }
             catch(Exception e)
             {
-                return NotFound();
+                return NotFound(e.Message);
             }
 
             return Ok();
+        }
+
+        private void saveLog()
+        {
+            _dbContext.Participantes.Add(new Participante { cedula = participante.cedula, fecha_exec = participante.fecha_exec });
+            _dbContext.SaveChanges();
         }
     }
 }
