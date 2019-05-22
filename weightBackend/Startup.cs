@@ -25,10 +25,12 @@ namespace weightBackend
             services.AddCors(options =>
             {
                 options.AddPolicy("MyCorsPolicy", builder => builder
-                    .WithOrigins("*")
+                    //.WithOrigins("http://localhost:4200")
+                    .AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowCredentials()
-                    .WithHeaders("Accept", "Content-Type", "Origin", "X-My-Header"));
+                    .AllowAnyHeader());
+                    //.WithHeaders("Accept", "Content-Type", "Origin", "X-My-Header", "Content-Length", "Content-Disposition"));
             });
         }
 

@@ -8,7 +8,6 @@ namespace weightBackend.Domain
 {
     public class CalcularViajesDia
     {
-        private static List<int> objectsPerDay = new List<int>();
 
         public CalcularViajesDia()
         {
@@ -20,13 +19,6 @@ namespace weightBackend.Domain
             Stream fs = file.OpenReadStream();
             var streamReader = new StreamReader(fs);
 
-            // open file
-            //var fileOpened = streamReader.ReadToEnd();
-            //fileOpened = fileOpened.Replace("\n", "");
-            //List<string> list = fileOpened.Split('\r').ToList();
-            //list.Remove("");
-
-            //string str = streamReader.ReadToEnd();
             List<int> dataLines = new List<int>();
 
             string line;
@@ -36,31 +28,29 @@ namespace weightBackend.Domain
                 dataLines.Add(int.Parse(line));
             }
 
-            //List<int> listElements = new List<int>();
-            //listElements = dataLines.Select(int.Parse).ToList();
-
             string resultOutput = "";
             int dayPerLine = 0;
+            List<int> objectsPerDay = new List<int>();
 
-            dataLines.ForEach(d =>
+            for(int index = 1; index < dataLines.Count; index ++)
             {
                 dayPerLine++;
-                var numObjects = d;
-                int index = dataLines.IndexOf(d);
+                var numObjects = dataLines[index];
+                int count;
 
-                for (int i = index + 1; i <= index + numObjects; i++)
+                for (count = index + 1; count <= (index + numObjects); count++)
                 {
-                    objectsPerDay.Add(dataLines[i]);
+                    objectsPerDay.Add(dataLines[count]);
                 }
-                string resultLine = "Case #" + dayPerLine + ": " + CalcularViajes();
+                string resultLine = "Case #" + dayPerLine + ": " + CalcularViajes(objectsPerDay);
                 resultOutput = string.Concat(resultOutput, resultLine, Environment.NewLine);
-                index = index - 1;
-            });
+                index = count - 1;
+            }
 
             return resultOutput;
         }
 
-        public static int CalcularViajes()
+        public static int CalcularViajes(List<int> objectsPerDay)
         {
             var maxObject = objectsPerDay.Max();
             objectsPerDay.Remove(maxObject);
@@ -82,12 +72,12 @@ namespace weightBackend.Domain
                 weight = maxObject * i;
             }
 
+            viajes++;
+
             if (objectsPerDay.Count > 0)
             {
-                viajes += CalcularViajes();
+                viajes += CalcularViajes(objectsPerDay);
             }
-
-            viajes++;
 
             return viajes;
 

@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace weightBackend.Controllers
 
         [HttpPost]
         [Route("generateFile")]
-        public ActionResult GenerateFile([FromQuery] int cedula)
+        public object GenerateFile([FromQuery] int cedula)
         {
             try
             {
@@ -32,19 +33,38 @@ namespace weightBackend.Controllers
                 var fecha_exec = new DateTime();
                 participante.fecha_exec = fecha_exec;
 
-                participante.file = HttpContext.Request.Form.Files["file"];
+                var file = HttpContext.Request.Form.Files["file"];
 
                 var calculoDias = "";
-                calculoDias = Domain.CalcularViajesDia.CalcularDias(participante.file);
+                calculoDias = Domain.CalcularViajesDia.CalcularDias(file);
                 if(calculoDias != "")
                 {
                     saveLog();
-                    HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                    /*HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
                     response.Content = new StringContent(calculoDias);
                     response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
                     response.Content.Headers.ContentDisposition.FileName = "lazy_loading_example_output.txt";
-                    response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                    return Ok(response);
+                    response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");*/
+
+
+                    StringBuilder sb = new StringBuilder();
+                    string output = calculoDias;
+                    sb.Append(output);
+                    //sb.Append("\r\n");
+
+                    string text = sb.ToString();
+
+                    Response.Clear();
+                    //Response.Headers.Clear();
+
+                    Response.Headers.Append("Content-Length", text.Length.ToString());
+                    //Response.ContentType = "text/plain";
+                    Response.ContentType = "octet-stream";
+                    Response.Headers.Append("Content-Disposition", "attachment;filename=\"lazy_loading_example_output.txt\"");
+
+                    Response.WriteAsync(text);
+                    //Response.End();
+                    return Response;
                 }
                 else
                 {

@@ -10,7 +10,6 @@ namespace weightBackend.Models
         public Guid id { get; set; }
         public int cedula { get; set; }
         public DateTime fecha_exec { get; set; }
-        public IFormFile file { get; set; }
         public Participante()
         {}
     }
